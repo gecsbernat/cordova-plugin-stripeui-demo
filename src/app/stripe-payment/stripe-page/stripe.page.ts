@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
-import { StripePaymentService } from '../service/stripe-payment.service';
+import { BillingConfig, PaymentResult, StripePaymentService } from '../service/stripe-payment.service';
 
 @Component({
   selector: 'app-stripe',
@@ -14,6 +14,7 @@ export class StripePage implements OnInit {
   @Input() customerId: string = null;
   @Input() customerEmail: string = null;
   @Input() customerName: string = null;
+  @Input() billingConfig: BillingConfig = null;
   amount: number = null;
   loading = false;
 
@@ -35,19 +36,12 @@ export class StripePage implements OnInit {
   async payment() {
     try {
       this.loading = true;
-      const payment = await this.stripeService.makePayment(this.amount, this.currency, this.customerId, this.customerEmail, this.customerName);
-      const paymentIntent = payment.paymentIntent;
-      const customer = payment.customer;
-      const result = payment.result;
-      const code = result.code ? Number(result.code) : -1;
-      const message = result.message || null;
-      const error = result.error || null;
-      console.log({ paymentIntent, customer, code, message, error });
+      const paymentResult = await this.stripeService.makePayment(this.amount, this.currency, this.customerId, this.customerEmail, this.customerName, this.billingConfig);
+      const code = paymentResult.code ? Number(paymentResult.code) : -1;
       this.loading = false;
       if (code === 0) {
         // PAYMENT_COMPLETED
-        this.savePayment(paymentIntent, customer);
-        this.dismiss(true);
+        this.savePayment(paymentResult);
       } else if (code === 1) {
         // PAYMENT_CANCELED
       } else if (code === 2) {
@@ -59,8 +53,10 @@ export class StripePage implements OnInit {
     }
   }
 
-  savePayment(paymentIntent: string, customer: string) {
-    console.log({ paymentIntent, customer });
+  savePayment(paymentResult: PaymentResult) {
+    // customerId?: string; code?: string; message?: string; error?: string;
+    console.log({ paymentResult });
+    this.dismiss(true);
   }
 
   async dismiss(data: any = null) {

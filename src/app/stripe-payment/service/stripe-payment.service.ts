@@ -4,6 +4,35 @@ import { Platform } from '@ionic/angular';
 
 declare const StripeUIPlugin: any;
 
+export interface PaymentResult {
+    customerId?: string;
+    code?: string;
+    message?: string;
+    error?: string;
+}
+
+export interface PaymentConfig {
+    publishableKey?: string;
+    companyName?: string;
+    customerId?: string;
+    paymentIntent?: string;
+    ephemeralKey?: string;
+    appleMerchantId?: string;
+    appleMerchantCountryCode?: string;
+}
+
+export interface BillingConfig {
+    billingEmail?: string;
+    billingName?: string;
+    billingPhone?: string;
+    billingCity?: string;
+    billingCountry?: string;
+    billingLine1?: string;
+    billingLine2?: string;
+    billingPostalCode?: string;
+    billingState?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StripePaymentService {
 
@@ -19,7 +48,7 @@ export class StripePaymentService {
         });
     }
 
-    makePayment(amount: number, currency: string, customerId: string = null, customerEmail: string = null, customerName: string = null): Promise<{ result: { code: string, message: string, error: string }, paymentIntent: string, customer: string }> {
+    makePayment(amount: number, currency: string, customerId: string = null, customerEmail: string = null, customerName: string = null, billingConfig: BillingConfig): Promise<PaymentResult> {
         return new Promise((resolve, reject) => {
             if (this.isCordova) {
                 const body = {
@@ -30,15 +59,18 @@ export class StripePaymentService {
                     customerName: customerName
                 };
                 const subscribe = this.http.post(this.SERVER_URL, body).subscribe((result: any) => {
-                    const publishableKey = result.publishableKey;
-                    const companyName = result.companyName;
-                    const paymentIntent = result.paymentIntent;
-                    const customer = result.customer
-                    const ephemeralKey = result.ephemeralKey;
-                    const appleMerchantId = result.appleMerchantId;
-                    const appleMerchantCountryCode = result.appleMerchantCountryCode;
-                    this.presentPaymentSheet(publishableKey, companyName, paymentIntent, customer, ephemeralKey, appleMerchantId, appleMerchantCountryCode).then((result) => {
-                        resolve({ result, paymentIntent, customer });
+                    const paymentConfig: PaymentConfig = {
+                        publishableKey: result.publishableKey,
+                        companyName: result.companyName,
+                        paymentIntent: result.paymentIntent,
+                        customerId: result.customerId,
+                        ephemeralKey: result.ephemeralKey,
+                        appleMerchantId: result.appleMerchantId,
+                        appleMerchantCountryCode: result.appleMerchantCountryCode
+                    }
+                    this.presentPaymentSheet(paymentConfig, billingConfig).then((result) => {
+                        result.customerId = paymentConfig.customerId;
+                        resolve(result);
                     }).catch((error) => {
                         reject(error);
                     });
@@ -53,12 +85,12 @@ export class StripePaymentService {
         });
     }
 
-    private presentPaymentSheet(publishableKey: string, companyName: string, paymentIntent: string, customer: string, ephemeralKey: string, appleMerchantId: string, appleMerchantCountryCode: string): Promise<any> {
+    private presentPaymentSheet(paymentConfig: PaymentConfig, billingConfig: BillingConfig): Promise<PaymentResult> {
         return new Promise((resolve, reject) => {
             if (this.isCordova) {
-                StripeUIPlugin.presentPaymentSheet(publishableKey, companyName, paymentIntent, customer, ephemeralKey, appleMerchantId, appleMerchantCountryCode, (success: any) => {
+                StripeUIPlugin.presentPaymentSheet(paymentConfig, billingConfig, (success: any) => {
                     try {
-                        const result = JSON.parse(success) as any;
+                        const result = JSON.parse(success) as PaymentResult;
                         resolve(result);
                     } catch (unused) {
                         resolve(success);

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ModalController } from '@ionic/angular';
+import { BillingConfig } from '../stripe-payment/service/stripe-payment.service';
 import { StripePage } from '../stripe-payment/stripe-page/stripe.page';
 
 @Component({
@@ -28,19 +29,31 @@ export class HomePage {
         price: 100
       }
     ];
-    this.openPayment(items, 'USD');
+    const billingConfig: BillingConfig = {
+      billingEmail: 'testuser@example.com',
+      billingName: 'Test User',
+      billingPhone: '+36201234567',
+      billingCity: 'Szeged',
+      billingCountry: 'HU',
+      billingLine1: 'Test street 1',
+      billingLine2: '1/1',
+      billingPostalCode: '6724',
+      billingState: 'Csongrad'
+    };
+    this.openPayment(items, 'USD', null, 'testuser@example.com', 'Test User', billingConfig);
   }
 
-  async openPayment(items: any[], currency: string) {
+  async openPayment(items: any[], currency: string, customerId: string, customerEmail: string, customerName: string, billingConfig: BillingConfig) {
     const modal = await this.modalController.create({
       component: StripePage,
       backdropDismiss: false,
       componentProps: {
         items: items,
         currency: currency,
-        customerId: null,
-        customerEmail: null,
-        customerName: null
+        customerId: customerId,
+        customerEmail: customerEmail,
+        customerName: customerName,
+        billingConfig: billingConfig
       }
     });
     modal.onDidDismiss().then((data) => {
