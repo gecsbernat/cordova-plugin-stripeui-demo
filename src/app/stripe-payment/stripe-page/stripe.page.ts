@@ -36,6 +36,8 @@ export class StripePage implements OnInit {
   async payment() {
     try {
       this.loading = true;
+      // customerId, customerEmail, customerName, billingConfig can be null.
+      // customerId should be your saved customer from prevoius payment.
       const paymentResult = await this.stripeService.makePayment(this.amount, this.currency, this.customerId, this.customerEmail, this.customerName, this.billingConfig);
       const code = paymentResult.code ? Number(paymentResult.code) : -1;
       this.loading = false;
@@ -54,6 +56,7 @@ export class StripePage implements OnInit {
   }
 
   savePayment(paymentResult: PaymentResult) {
+    // TODO: save the payment and customer in your database for later use...
     // customerId?: string; code?: string; message?: string; error?: string;
     console.log({ paymentResult });
     this.dismiss(true);
