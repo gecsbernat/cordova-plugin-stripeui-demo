@@ -19,6 +19,7 @@ export interface PaymentConfig {
     ephemeralKey?: string;
     appleMerchantId?: string;
     appleMerchantCountryCode?: string;
+    mobilePayEnabled?: boolean;
 }
 
 export interface BillingConfig {
@@ -66,7 +67,8 @@ export class StripePaymentService {
                         customerId: result.customerId,
                         ephemeralKey: result.ephemeralKey,
                         appleMerchantId: result.appleMerchantId,
-                        appleMerchantCountryCode: result.appleMerchantCountryCode
+                        appleMerchantCountryCode: result.appleMerchantCountryCode,
+                        mobilePayEnabled: true
                     }
                     this.presentPaymentSheet(paymentConfig, billingConfig).then((result) => {
                         result.customerId = paymentConfig.customerId;
