@@ -1,6 +1,8 @@
 # cordova-plugin-stripeui-demo
 Demo Ionic project for cordova-plugin-stripeui
 
+ --> [cordova-plugin-stripeui](https://github.com/gecsbernat/cordova-plugin-stripeui) <--
+
 ## Usage
 
 ```sh
